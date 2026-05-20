@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIBC Lanka AI Platform — Intelligent Manufacturing Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8102E;
+    --red-bright: #FF1F3D;
+    --red-dark: #8B0000;
+    --red-glow: rgba(200,16,46,0.4);
+    --black: #080808;
+    --surface: #0f0f0f;
+    --surface2: #161616;
+    --surface3: #1e1e1e;
+    --white: #F5F5F5;
+    --gray: #666;
+    --gray-light: #999;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  #cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--red);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 40px; height: 40px;
+    border: 1px solid rgba(200,16,46,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 20px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 12px; text-decoration: none;
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--red);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue'; font-size: 14px; color: white;
+  }
+  .logo-text { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; color: var(--white); }
+  .logo-text span { color: var(--red); }
+
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    text-decoration: none; color: var(--gray-light);
+    font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+    transition: color 0.3s;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  }
+  .nav-links a:hover { color: var(--red); }
+
+  .nav-cta {
+    padding: 10px 24px;
+    background: var(--red);
+    color: white;
+    text-decoration: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; letter-spacing: 2px; font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .nav-cta:hover { background: var(--red-bright); transform: translateY(-2px); }
+
+  /* HERO */
+  #hero {
+    position: relative;
+    height: 100vh;
+    display: flex; align-items: center;
+    overflow: hidden;
+  }
+
+  #three-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 60px;
+    max-width: 750px;
+  }
+
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 16px;
+    border: 1px solid rgba(200,16,46,0.4);
+    background: rgba(200,16,46,0.1);
+    font-family: 'Barlow Condensed'; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--red);
+    margin-bottom: 30px;
+    animation: fadeSlideUp 0.8s ease both;
+  }
+  .hero-label::before {
+    content: ''; display: block;
+    width: 6px; height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes fadeSlideUp {
+    from { opacity:0; transform: translateY(30px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue';
+    font-size: clamp(64px, 8vw, 110px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    animation: fadeSlideUp 0.8s ease 0.15s both;
+  }
+  .hero-title .red { color: var(--red); }
+  .hero-title .outline {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+    color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 16px; color: var(--gray-light); line-height: 1.7;
+    max-width: 520px; margin-bottom: 40px;
+    animation: fadeSlideUp 0.8s ease 0.3s both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px;
+    animation: fadeSlideUp 0.8s ease 0.45s both;
+  }
+
+  .btn-primary {
+    padding: 16px 40px;
+    background: var(--red);
+    color: white;
+    text-decoration: none;
+    font-family: 'Barlow Condensed'; font-size: 15px;
+    letter-spacing: 2px; font-weight: 700; text-transform: uppercase;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  .btn-primary:hover::after { transform: translateX(0); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(200,16,46,0.4); }
+
+  .btn-outline {
+    padding: 16px 40px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    text-decoration: none;
+    font-family: 'Barlow Condensed'; font-size: 15px;
+    letter-spacing: 2px; font-weight: 700; text-transform: uppercase;
+    transition: all 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .btn-outline:hover { border-color: var(--red); color: var(--red); transform: translateY(-3px); }
+
+  .hero-scroll {
+    position: absolute; bottom: 40px; left: 60px;
+    display: flex; align-items: center; gap: 12px;
+    color: var(--gray); font-size: 12px; letter-spacing: 2px;
+    text-transform: uppercase; font-family: 'Barlow Condensed';
+    z-index: 2;
+    animation: fadeSlideUp 0.8s ease 0.6s both;
+  }
+  .scroll-line {
+    width: 40px; height: 1px; background: var(--gray);
+    animation: scrollAnim 2s ease-in-out infinite;
+  }
+  @keyframes scrollAnim { 0%,100%{width:40px} 50%{width:70px} }
+
+  .hero-stats {
+    position: absolute; bottom: 40px; right: 60px;
+    display: flex; gap: 40px; z-index: 2;
+    animation: fadeSlideUp 0.8s ease 0.7s both;
+  }
+  .hero-stat { text-align: right; }
+  .hero-stat-val {
+    font-family: 'Bebas Neue'; font-size: 40px;
+    color: var(--red); line-height: 1;
+  }
+  .hero-stat-label {
+    font-size: 11px; color: var(--gray);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    font-family: 'Barlow Condensed';
+  }
+
+  /* RED LINE ACCENT */
+  .red-line {
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--red), transparent);
+    opacity: 0.6;
+  }
+
+  /* SECTION COMMONS */
+  section { padding: 120px 60px; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-label-line { width: 40px; height: 1px; background: var(--red); }
+  .section-label-text {
+    font-family: 'Barlow Condensed'; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--red);
+  }
+  .section-title {
+    font-family: 'Bebas Neue'; font-size: clamp(42px, 5vw, 72px);
+    line-height: 0.95; letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .section-title .outline {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+    color: transparent;
+  }
+  .section-sub { font-size: 15px; color: var(--gray-light); line-height: 1.7; max-width: 560px; }
+
+  /* DEPARTMENTS SECTION */
+  #departments {
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  #departments::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(to right, transparent, var(--red), transparent);
+  }
+  .dept-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 60px;
+  }
+  .dept-card {
+    background: var(--surface2);
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: all 0.4s ease;
+  }
+  .dept-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .dept-card:hover { background: var(--surface3); transform: translateY(-4px); }
+  .dept-card:hover::before { transform: scaleX(1); }
+  .dept-icon {
+    width: 48px; height: 48px;
+    border: 1px solid rgba(200,16,46,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 20px;
+    transition: border-color 0.3s;
+    background: rgba(200,16,46,0.05);
+  }
+  .dept-card:hover .dept-icon { border-color: var(--red); background: rgba(200,16,46,0.15); }
+  .dept-name {
+    font-family: 'Barlow Condensed'; font-size: 18px; font-weight: 700;
+    letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase;
+  }
+  .dept-desc { font-size: 13px; color: var(--gray); line-height: 1.6; }
+  .dept-number {
+    position: absolute; bottom: 20px; right: 20px;
+    font-family: 'Bebas Neue'; font-size: 60px;
+    color: rgba(255,255,255,0.03); line-height: 1;
+  }
+
+  /* AI FEATURES */
+  #features { background: var(--black); }
+  .features-layout {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; margin-top: 60px; align-items: start;
+  }
+  .feature-list { display: flex; flex-direction: column; gap: 2px; }
+  .feature-item {
+    padding: 28px 32px;
+    background: var(--surface);
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .feature-item:hover, .feature-item.active {
+    background: var(--surface2);
+    border-left-color: var(--red);
+  }
+  .feature-item-title {
+    font-family: 'Barlow Condensed'; font-size: 17px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .feature-item-desc { font-size: 13px; color: var(--gray); line-height: 1.6; }
+  .feature-visual {
+    position: sticky; top: 100px;
+    background: var(--surface);
+    padding: 40px;
+    border: 1px solid var(--border);
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .feature-chart { width: 100%; }
+
+  /* AI CHAT PREVIEW */
+  #ai-preview {
+    background: var(--surface);
+    position: relative; overflow: hidden;
+  }
+  .preview-layout {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; margin-top: 60px; align-items: center;
+  }
+  .chat-window {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(200,16,46,0.08);
+  }
+  .chat-indicator {
+    width: 8px; height: 8px; background: var(--red);
+    border-radius: 50%; animation: pulse 2s infinite;
+  }
+  .chat-header-text {
+    font-family: 'Barlow Condensed'; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .chat-messages { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .chat-msg {
+    padding: 14px 16px;
+    font-size: 13px; line-height: 1.6; color: var(--gray-light);
+    animation: fadeSlideUp 0.5s ease both;
+  }
+  .chat-msg.user {
+    background: rgba(200,16,46,0.1);
+    border-left: 2px solid var(--red);
+    align-self: flex-end; max-width: 85%;
+    color: var(--white);
+  }
+  .chat-msg.ai {
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid rgba(255,255,255,0.15);
+    max-width: 95%;
+  }
+  .msg-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'Barlow Condensed'; margin-bottom: 6px;
+    color: var(--gray);
+  }
+  .msg-label.red { color: var(--red); }
+
+  /* HOW IT WORKS */
+  #how {
+    background: var(--black);
+    position: relative;
+  }
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; margin-top: 60px;
+    position: relative;
+  }
+  .steps-grid::before {
+    content: '';
+    position: absolute;
+    top: 40px; left: calc(25% / 2); right: calc(25% / 2);
+    height: 1px;
+    background: linear-gradient(to right, var(--red), rgba(200,16,46,0.2), var(--red));
+    z-index: 0;
+  }
+  .step-card {
+    padding: 0 30px 40px;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .step-num {
+    width: 80px; height: 80px;
+    border: 1px solid rgba(200,16,46,0.3);
+    background: var(--black);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue'; font-size: 32px; color: var(--red);
+    margin: 0 auto 24px;
+    transition: all 0.3s;
+  }
+  .step-card:hover .step-num {
+    background: var(--red); color: white;
+    box-shadow: 0 0 30px rgba(200,16,46,0.5);
+  }
+  .step-title {
+    font-family: 'Barlow Condensed'; font-size: 16px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .step-desc { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+  /* METRICS BANNER */
+  .metrics-banner {
+    background: var(--red);
+    padding: 50px 60px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+  }
+  .metric-item { text-align: center; }
+  .metric-val {
+    font-family: 'Bebas Neue'; font-size: 60px;
+    color: white; line-height: 1;
+  }
+  .metric-label {
+    font-family: 'Barlow Condensed'; font-size: 13px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* CTA */
+  #cta {
+    background: var(--surface);
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: 'FIBC AI';
+    position: absolute;
+    font-family: 'Bebas Neue'; font-size: 300px;
+    color: rgba(255,255,255,0.015);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  #cta .section-title { font-size: clamp(48px, 7vw, 100px); }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    padding: 60px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px; margin-bottom: 40px;
+  }
+  .footer-brand-desc { font-size: 13px; color: var(--gray); line-height: 1.7; margin-top: 16px; }
+  .footer-col-title {
+    font-family: 'Barlow Condensed'; font-size: 13px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--white);
+    margin-bottom: 20px;
+  }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a {
+    text-decoration: none; color: var(--gray); font-size: 13px;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--red); }
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 30px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-copy { font-size: 12px; color: var(--gray); }
+  .footer-copy span { color: var(--red); }
+  .footer-badge {
+    display: flex; gap: 16px;
+  }
+  .badge {
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 10px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--gray);
+    font-family: 'Barlow Condensed';
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* GRID LINES BACKGROUND */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  @media (max-width: 1024px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    .hero-content { padding: 0 24px; }
+    .dept-grid { grid-template-columns: repeat(2, 1fr); }
+    .features-layout { grid-template-columns: 1fr; }
+    .preview-layout { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    .metrics-banner { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .hero-stats { display: none; }
+    .hero-scroll { left: 24px; }
+    .metrics-banner { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark">F</div>
+    <span class="logo-text">FIBC <span>AI</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#departments">Departments</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#ai-preview">AI Engine</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="https://www.fibclanka.com" target="_blank">fibclanka.com</a></li>
+  </ul>
+  <a href="/login" class="nav-cta">Platform Login</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="three-canvas"></canvas>
+  <div class="red-line"></div>
+
+  <div class="hero-content">
+    <div class="hero-label">FIBC Lanka — AI Manufacturing Intelligence</div>
+    <h1 class="hero-title">
+      SMART<br>
+      <span class="red">FACTORY</span><br>
+      <span class="outline">PLATFORM</span>
+    </h1>
+    <p class="hero-sub">
+      Real-time AI intelligence for FIBC bag manufacturing. Upload department reports, 
+      predict production needs, optimize efficiency, and track every metric — 
+      from yarn to loading, powered by AI.
+    </p>
+    <div class="hero-actions">
+      <a href="/login" class="btn-primary">Access Platform</a>
+      <a href="#features" class="btn-outline">Explore Features</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll to explore
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val">7</div>
+      <div class="hero-stat-label">Departments</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">1000<span style="font-size:0.5em">MT</span></div>
+      <div class="hero-stat-label">Monthly Cap.</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">20<span style="font-size:0.5em">+</span></div>
+      <div class="hero-stat-label">Export Countries</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPARTMENTS -->
+<section id="departments" class="grid-bg reveal">
+  <div class="section-label">
+    <div class="section-label-line"></div>
+    <span class="section-label-text">Operations</span>
+  </div>
+  <h2 class="section-title">7 DEPARTMENTS,<br><span class="outline">ONE PLATFORM</span></h2>
+  <p class="section-sub">Every production department connects to a unified AI intelligence layer. Each uploads their daily reports. The AI learns and predicts.</p>
+
+  <div class="dept-grid">
+    <div class="dept-card reveal">
+      <div class="dept-icon">🧵</div>
+      <div class="dept-name">Yarn Department</div>
+      <div class="dept-desc">PP/HDPE yarn production, denier tracking, twist reports, efficiency & waste metrics.</div>
+      <div class="dept-number">01</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.1s">
+      <div class="dept-icon">🏭</div>
+      <div class="dept-name">Loom Department</div>
+      <div class="dept-desc">Circular loom output, stops, fabric GSM, picks per inch, efficiency monitoring.</div>
+      <div class="dept-number">02</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.2s">
+      <div class="dept-icon">🖨️</div>
+      <div class="dept-name">Printing Department</div>
+      <div class="dept-desc">4-color polymer plate printer output, ink consumption, print damage tracking, plate usage.</div>
+      <div class="dept-number">03</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.3s">
+      <div class="dept-icon">✂️</div>
+      <div class="dept-name">Cutting Department</div>
+      <div class="dept-desc">Cut length accuracy, roll consumption, cutting waste, daily target vs achievement.</div>
+      <div class="dept-number">04</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.1s">
+      <div class="dept-icon">🪡</div>
+      <div class="dept-name">BCS Department</div>
+      <div class="dept-desc">Bag closing & sewing — stitch quality, output count, damage reports, thread usage.</div>
+      <div class="dept-number">05</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.2s">
+      <div class="dept-icon">📦</div>
+      <div class="dept-name">Finishing Department</div>
+      <div class="dept-desc">Final QC inspection, packing, labeling, rejection rates, daily dispatch readiness.</div>
+      <div class="dept-number">06</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.3s">
+      <div class="dept-icon">🚚</div>
+      <div class="dept-name">Loading Department</div>
+      <div class="dept-desc">Shipment tracking, container utilization, dispatch vs order fulfillment, delivery metrics.</div>
+      <div class="dept-number">07</div>
+    </div>
+    <div class="dept-card reveal" style="animation-delay:0.4s">
+      <div class="dept-icon">🏪</div>
+      <div class="dept-name">Stores Department</div>
+      <div class="dept-desc">Inventory management — roll stock, machine parts, lubricants, inks, consumables stock levels.</div>
+      <div class="dept-number">08</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">
+    <div class="section-label-line"></div>
+    <span class="section-label-text">AI Capabilities</span>
+  </div>
+  <h2 class="section-title">WHAT THE<br><span class="red">AI</span> <span class="outline">DOES</span></h2>
+
+  <div class="features-layout">
+    <div class="feature-list reveal">
+      <div class="feature-item active">
+        <div class="feature-item-title">📊 Daily Performance Analytics</div>
+        <div class="feature-item-desc">Departments upload Excel reports each day. The AI instantly analyzes production vs targets, flags underperformance, and generates insights automatically.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-title">🔮 Production Prediction Engine</div>
+        <div class="feature-item-desc">AI forecasts next 30/60/90 days of production output based on historical trends — helping procurement plan material purchases before stockouts happen.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-title">🧮 Material Requirements Planning</div>
+        <div class="feature-item-desc">Based on production forecasts, the AI tells you exactly what to buy: yarn quantities, ink, polymer plates, lubricants, spare parts, roll stock — and when.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-title">⚠️ Damage & Quality Intelligence</div>
+        <div class="feature-item-desc">Track print damages, bag damages, weaving defects, and QC rejections. AI identifies patterns and root causes across departments over time.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-title">💬 Ask Anything AI Chat</div>
+        <div class="feature-item-desc">Natural language interface — ask "What was last week's printing efficiency?" or "How much yarn do we need next month?" The AI answers from your own data.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-title">📈 Monthly & Yearly Reports</div>
+        <div class="feature-item-desc">Automatic report generation for management — monthly production summaries, yearly trends, department comparisons, KPI scorecards, and financial efficiency metrics.</div>
+      </div>
+    </div>
+
+    <div class="feature-visual reveal">
+      <canvas id="chart-canvas" width="400" height="400"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- AI CHAT PREVIEW -->
+<section id="ai-preview" class="grid-bg">
+  <div class="section-label">
+    <div class="section-label-line"></div>
+    <span class="section-label-text">AI Chat Engine</span>
+  </div>
+  <h2 class="section-title">YOUR DATA,<br><span class="outline">YOUR</span> <span class="red">AI</span></h2>
+
+  <div class="preview-layout">
+    <div class="reveal">
+      <p style="font-size:15px;color:var(--gray-light);line-height:1.8;margin-bottom:30px;">
+        Ask your AI anything about your factory — in plain English. It understands 
+        your manufacturing context, your departments, your products, and most importantly, 
+        <strong style="color:var(--white)">your own uploaded data</strong>. No generic answers. Only insights from FIBC Lanka's real operations.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--surface2);border-left:2px solid var(--red);">
+          <span style="color:var(--red);font-size:20px;">📌</span>
+          <span style="font-size:13px;color:var(--gray-light);">"What was the loom department's efficiency this week vs last week?"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--surface2);border-left:2px solid var(--red);">
+          <span style="color:var(--red);font-size:20px;">📌</span>
+          <span style="font-size:13px;color:var(--gray-light);">"How many FIBC bags did we ship last month, and what's the trend?"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--surface2);border-left:2px solid var(--red);">
+          <span style="color:var(--red);font-size:20px;">📌</span>
+          <span style="font-size:13px;color:var(--gray-light);">"We're planning 50,000 bags next month — what materials do I need to order?"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--surface2);border-left:2px solid var(--red);">
+          <span style="color:var(--red);font-size:20px;">📌</span>
+          <span style="font-size:13px;color:var(--gray-light);">"Which department had the highest damage rate this quarter?"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-window reveal">
+      <div class="chat-header">
+        <div class="chat-indicator"></div>
+        <span class="chat-header-text">FIBC-AI Assistant — Live</span>
+      </div>
+      <div class="chat-messages" id="demo-chat">
+        <div class="chat-msg user" style="animation-delay:0.3s">
+          <div class="msg-label red">You</div>
+          What was printing damage rate last week and how does it compare to our monthly average?
+        </div>
+        <div class="chat-msg ai" style="animation-delay:0.8s">
+          <div class="msg-label">FIBC-AI</div>
+          Based on uploaded printing reports, last week's damage rate was <strong style="color:var(--red)">2.4%</strong> (148 damaged bags out of 6,200 printed).<br><br>
+          Your monthly average is <strong style="color:var(--white)">1.9%</strong>, making last week <strong style="color:var(--red)">26% above average</strong>. The spike appears on Wednesday and Thursday — correlating with the blue ink batch change. Recommend reviewing polymer plate alignment on Press #2.
+        </div>
+        <div class="chat-msg user" style="animation-delay:1.5s">
+          <div class="msg-label red">You</div>
+          How much ink stock do we need for next month's plan?
+        </div>
+        <div class="chat-msg ai" style="animation-delay:2s">
+          <div class="msg-label">FIBC-AI</div>
+          Based on 55,000 bags planned for next month and your current ink consumption rate of <strong style="color:var(--white)">18g/bag</strong> (4 colors), you'll need approximately <strong style="color:var(--red)">990 kg total ink</strong>. Current store stock shows 320 kg. <strong style="color:var(--red)">Purchase order recommended: ~700 kg minimum</strong> with 10% buffer = 770 kg.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">
+    <div class="section-label-line"></div>
+    <span class="section-label-text">Process</span>
+  </div>
+  <h2 class="section-title">HOW IT<br><span class="outline">WORKS</span></h2>
+
+  <div class="steps-grid reveal">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-title">Department Login</div>
+      <div class="step-desc">Each department head logs into their secure account. Access is role-based — department users see only their data, managers see all.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-title">Upload Excel Reports</div>
+      <div class="step-desc">Upload daily production, QC, sales, purchase orders, stock reports, and any Excel-based data. The system parses and stores it automatically.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-title">AI Analyzes Data</div>
+      <div class="step-desc">The AI engine processes your reports, identifies patterns, flags anomalies, calculates efficiency, and generates insights — in seconds.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-title">Predict & Act</div>
+      <div class="step-desc">Get production forecasts, material procurement recommendations, target tracking, and answers to any operational question — instantly.</div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS BANNER -->
+<div class="metrics-banner">
+  <div class="metric-item">
+    <div class="metric-val" data-target="7">0</div>
+    <div class="metric-label">Production Departments</div>
+  </div>
+  <div class="metric-item">
+    <div class="metric-val" data-target="50">0</div>
+    <div class="metric-label">Report Types Supported</div>
+  </div>
+  <div class="metric-item">
+    <div class="metric-val" data-target="24">0</div>
+    <div class="metric-label">Hour AI Availability</div>
+  </div>
+  <div class="metric-item">
+    <div class="metric-val" data-target="100">0</div>
+    <div class="metric-label">% Your Own Data</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-label" style="justify-content:center">
+    <div class="section-label-line"></div>
+    <span class="section-label-text">Get Started</span>
+    <div class="section-label-line"></div>
+  </div>
+  <h2 class="section-title reveal">INTELLIGENT<br><span class="red">MANUFACTURING</span><br><span class="outline">STARTS HERE</span></h2>
+  <p class="section-sub reveal" style="max-width:500px;margin:20px auto 40px;text-align:center;">
+    FIBC Lanka's AI platform is trained on your factory data. 
+    Contact the admin to get your department account activated.
+  </p>
+  <div style="display:flex;gap:16px;justify-content:center;" class="reveal">
+    <a href="/login" class="btn-primary">Access Dashboard</a>
+    <a href="https://www.fibclanka.com/contact" target="_blank" class="btn-outline">Contact Admin</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="/" class="nav-logo" style="margin-bottom:16px;display:inline-flex">
+        <div class="logo-mark">F</div>
+        <span class="logo-text">FIBC <span>AI</span> Platform</span>
+      </a>
+      <p class="footer-brand-desc">
+        FIBC Lanka (Pvt) Ltd — Sri Lanka's premier FIBC bag manufacturer since 2016. 
+        ISO 9001:2015 QMS & GMP, HACCP certified. 1000MT monthly capacity. 
+        Industrial Zone, Lakshauyana, Polonnaruwa, Sri Lanka.
+      </p>
+      <div style="display:flex;gap:8px;margin-top:20px;">
+        <div class="badge">ISO 9001</div>
+        <div class="badge">HACCP</div>
+        <div class="badge">GMP</div>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Platform</div>
+      <ul class="footer-links">
+        <li><a href="/login">Login</a></li>
+        <li><a href="#departments">Departments</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#ai-preview">AI Engine</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Departments</div>
+      <ul class="footer-links">
+        <li><a href="#">Yarn</a></li>
+        <li><a href="#">Loom</a></li>
+        <li><a href="#">Printing</a></li>
+        <li><a href="#">Cutting</a></li>
+        <li><a href="#">BCS</a></li>
+        <li><a href="#">Finishing</a></li>
+        <li><a href="#">Loading</a></li>
+        <li><a href="#">Stores</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <ul class="footer-links">
+        <li><a href="tel:+94274929898">+94 274 929 898</a></li>
+        <li><a href="mailto:info@fibclanka.com">info@fibclanka.com</a></li>
+        <li><a href="https://www.fibclanka.com" target="_blank">fibclanka.com</a></li>
+        <li><a href="https://www.facebook.com/fibclanka" target="_blank">Facebook</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2024 <span>FIBC Lanka (Pvt) Ltd</span>. AI Platform. All rights reserved.</div>
+    <div class="footer-copy">Built for <span>FIBC Lanka</span> — Polonnaruwa, Sri Lanka</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── CURSOR ──────────────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursor.style.left = mouseX + 'px';
+  cursor.style.top = mouseY + 'px';
+  setTimeout(() => {
+    cursorRing.style.left = mouseX + 'px';
+    cursorRing.style.top = mouseY + 'px';
+  }, 80);
+});
+document.querySelectorAll('a, button, .dept-card, .feature-item, .step-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform = 'translate(-50%,-50%) scale(2)';
+    cursorRing.style.transform = 'translate(-50%,-50%) scale(1.5)';
+    cursorRing.style.borderColor = 'var(--red)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+    cursorRing.style.transform = 'translate(-50%,-50%) scale(1)';
+    cursorRing.style.borderColor = 'rgba(200,16,46,0.5)';
+  });
+});
+
+// ─── THREE.JS SCENE ──────────────────────────────────────────────────────────
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x080808, 10, 50);
+
+const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+camera.position.set(5, 2, 8);
+camera.lookAt(0, 0, 0);
+
+// FIBC Bag wireframe (tall box shape)
+const bagGeom = new THREE.BoxGeometry(2, 3, 2);
+const wireMat = new THREE.MeshBasicMaterial({ color: 0xC8102E, wireframe: true, opacity: 0.6, transparent: true });
+const bagMesh = new THREE.Mesh(bagGeom, wireMat);
+scene.add(bagMesh);
+
+// Glowing edges
+const edges = new THREE.EdgesGeometry(bagGeom);
+const lineMat = new THREE.LineBasicMaterial({ color: 0xFF1F3D, opacity: 0.9, transparent: true });
+const wireframe = new THREE.LineSegments(edges, lineMat);
+scene.add(wireframe);
+
+// Inner bag
+const innerGeom = new THREE.BoxGeometry(1.6, 2.6, 1.6);
+const innerMat = new THREE.MeshBasicMaterial({ color: 0x8B0000, wireframe: true, opacity: 0.2, transparent: true });
+scene.add(new THREE.Mesh(innerGeom, innerMat));
+
+// Particles
+const particleCount = 2000;
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  const r = 8 + Math.random() * 12;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * Math.PI;
+  positions[i*3] = r * Math.sin(phi) * Math.cos(theta);
+  positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta) * 0.5;
+  positions[i*3+2] = r * Math.cos(phi);
+  const isRed = Math.random() > 0.7;
+  colors[i*3] = isRed ? 1 : 0.3;
+  colors[i*3+1] = isRed ? 0.08 : 0.3;
+  colors[i*3+2] = isRed ? 0.1 : 0.3;
+}
+const partGeom = new THREE.BufferGeometry();
+partGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+partGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const partMat = new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 0.8 });
+scene.add(new THREE.Points(partGeom, partMat));
+
+// Grid floor
+const gridHelper = new THREE.GridHelper(30, 30, 0x300000, 0x150000);
+gridHelper.position.y = -3;
+scene.add(gridHelper);
+
+// Rings
+for (let i = 0; i < 3; i++) {
+  const ringGeom = new THREE.RingGeometry(2.5 + i*1.2, 2.6 + i*1.2, 64);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xC8102E, side: THREE.DoubleSide, opacity: 0.15 - i*0.04, transparent: true });
+  const ring = new THREE.Mesh(ringGeom, ringMat);
+  ring.rotation.x = Math.PI / 2 + i * 0.3;
+  ring.userData.rotSpeed = 0.002 + i * 0.001;
+  scene.add(ring);
+}
+
+let mouseRot = { x: 0, y: 0 };
+document.addEventListener('mousemove', e => {
+  mouseRot.x = (e.clientY / window.innerHeight - 0.5) * 0.3;
+  mouseRot.y = (e.clientX / window.innerWidth - 0.5) * 0.5;
+});
+
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.005;
+  bagMesh.rotation.y += 0.006;
+  wireframe.rotation.y += 0.006;
+  bagMesh.rotation.x = Math.sin(t) * 0.1;
+  wireframe.rotation.x = Math.sin(t) * 0.1;
+  bagMesh.position.y = Math.sin(t) * 0.2;
+  wireframe.position.y = Math.sin(t) * 0.2;
+
+  scene.children.forEach(c => { if (c.userData.rotSpeed) c.rotation.z += c.userData.rotSpeed; });
+
+  camera.position.x += (mouseRot.y * 3 - camera.position.x + 5) * 0.03;
+  camera.position.y += (-mouseRot.x * 2 - camera.position.y + 2) * 0.03;
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+});
+
+// ─── DEMO CHART ──────────────────────────────────────────────────────────────
+const chartCanvas = document.getElementById('chart-canvas');
+const ctx = chartCanvas.getContext('2d');
+function drawBarChart() {
+  const W = chartCanvas.width, H = chartCanvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f0f0f';
+  ctx.fillRect(0, 0, W, H);
+
+  const data = [72,85,68,91,78,95,83,88,76,92,89,74];
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const target = 85;
+  const barW = (W - 80) / data.length - 8;
+  const maxH = H - 80;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = 30 + (maxH / 5) * i;
+    ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(W - 20, y); ctx.stroke();
+    ctx.fillStyle = '#555'; ctx.font = '10px DM Sans';
+    ctx.fillText((100 - i*20) + '%', 8, y + 4);
+  }
+
+  // Target line
+  const targetY = 30 + maxH * (1 - target/100);
+  ctx.strokeStyle = 'rgba(200,16,46,0.5)';
+  ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, targetY); ctx.lineTo(W - 20, targetY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#C8102E'; ctx.font = '10px DM Sans';
+  ctx.fillText('Target', W - 58, targetY - 4);
+
+  // Bars
+  data.forEach((val, i) => {
+    const x = 44 + i * (barW + 8);
+    const barH = (val / 100) * maxH;
+    const y = 30 + maxH - barH;
+
+    const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+    const above = val >= target;
+    grad.addColorStop(0, above ? '#C8102E' : 'rgba(80,80,80,0.8)');
+    grad.addColorStop(1, above ? 'rgba(139,0,0,0.3)' : 'rgba(40,40,40,0.4)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, barW, barH);
+
+    // Value
+    ctx.fillStyle = above ? '#C8102E' : '#666';
+    ctx.font = 'bold 11px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText(val + '%', x + barW/2, y - 5);
+
+    // Label
+    ctx.fillStyle = '#555'; ctx.font = '10px DM Sans';
+    ctx.fillText(labels[i], x + barW/2, H - 12);
+  });
+  ctx.textAlign = 'left';
+}
+drawBarChart();
+
+// ─── SCROLL REVEAL ────────────────────────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+
+// ─── COUNTER ANIMATION ───────────────────────────────────────────────────────
+const counterEls = document.querySelectorAll('[data-target]');
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const el = e.target;
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 50;
+      const interval = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current);
+        if (current >= target) clearInterval(interval);
+      }, 30);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+counterEls.forEach(el => counterObserver.observe(el));
+
+// ─── NAV ACTIVE ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-links a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>

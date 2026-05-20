@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIBC AI Platform — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8102E; --red-bright: #FF1F3D; --black: #080808;
+    --surface: #0f0f0f; --surface2: #161616; --white: #F5F5F5;
+    --gray: #666; --gray-light: #999; --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--black); color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh; display: flex;
+    background-image:
+      linear-gradient(rgba(200,16,46,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,16,46,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .login-left {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 60px; background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .login-left::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(to right, var(--red), var(--red-bright));
+  }
+  .login-right {
+    flex: 0 0 460px; display: flex; flex-direction: column;
+    justify-content: center; padding: 60px;
+  }
+  .brand { text-align: center; margin-bottom: 60px; }
+  .brand-logo {
+    width: 60px; height: 60px;
+    background: var(--red);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue'; font-size: 24px; color: white;
+    margin: 0 auto 16px;
+  }
+  .brand-name {
+    font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 3px;
+  }
+  .brand-name span { color: var(--red); }
+  .brand-sub { font-size: 12px; color: var(--gray); letter-spacing: 2px;
+    text-transform: uppercase; font-family: 'Barlow Condensed'; margin-top: 6px; }
+
+  .big-text {
+    font-family: 'Bebas Neue'; font-size: 80px; line-height: 0.9;
+    letter-spacing: 1px; text-align: center; margin-bottom: 24px;
+  }
+  .big-text .red { color: var(--red); }
+  .big-text .outline {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.2); color: transparent;
+  }
+
+  .dept-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-bottom: 40px;
+  }
+  .pill {
+    padding: 6px 14px; border: 1px solid rgba(200,16,46,0.2);
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gray); font-family: 'Barlow Condensed';
+    background: rgba(200,16,46,0.05);
+  }
+
+  .bg-number {
+    position: absolute; bottom: -20px; right: -20px;
+    font-family: 'Bebas Neue'; font-size: 200px;
+    color: rgba(200,16,46,0.04); pointer-events: none; line-height: 1;
+  }
+
+  .form-title {
+    font-family: 'Bebas Neue'; font-size: 36px; letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .form-sub { font-size: 13px; color: var(--gray); margin-bottom: 36px; }
+  .form-sub a { color: var(--red); text-decoration: none; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-label {
+    display: block; font-family: 'Barlow Condensed'; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--gray-light);
+    margin-bottom: 8px;
+  }
+  .form-input {
+    width: 100%; padding: 14px 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--white); font-family: 'DM Sans'; font-size: 15px;
+    outline: none; transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .form-input:focus { border-color: var(--red); background: rgba(200,16,46,0.05); }
+  .form-input::placeholder { color: var(--gray); }
+
+  .form-submit {
+    width: 100%; padding: 16px;
+    background: var(--red); color: white; border: none;
+    font-family: 'Barlow Condensed'; font-size: 15px;
+    letter-spacing: 3px; text-transform: uppercase; font-weight: 700;
+    cursor: pointer; transition: all 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    position: relative; overflow: hidden;
+  }
+  .form-submit:hover { background: var(--red-bright); transform: translateY(-2px); }
+  .form-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .error-msg {
+    padding: 12px 16px;
+    background: rgba(200,16,46,0.1); border-left: 3px solid var(--red);
+    font-size: 13px; color: #ff6b6b;
+    margin-bottom: 20px; display: none;
+  }
+
+  .form-footer {
+    margin-top: 30px; text-align: center;
+    font-size: 12px; color: var(--gray);
+  }
+  .form-footer a { color: var(--red); text-decoration: none; }
+
+  .credentials-hint {
+    margin-top: 24px; padding: 12px 16px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    font-size: 12px; color: var(--gray); line-height: 1.8;
+  }
+  .credentials-hint strong { color: var(--gray-light); }
+
+  @media (max-width: 768px) {
+    .login-left { display: none; }
+    .login-right { flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-left">
+  <div class="bg-number">AI</div>
+  <div class="big-text">
+    FIBC<br><span class="red">SMART</span><br><span class="outline">FACTORY</span>
+  </div>
+  <div class="dept-pills">
+    <span class="pill">🧵 Yarn</span>
+    <span class="pill">🏭 Loom</span>
+    <span class="pill">🖨️ Printing</span>
+    <span class="pill">✂️ Cutting</span>
+    <span class="pill">🪡 BCS</span>
+    <span class="pill">📦 Finishing</span>
+    <span class="pill">🚚 Loading</span>
+    <span class="pill">🏪 Stores</span>
+  </div>
+  <p style="text-align:center;font-size:13px;color:var(--gray);max-width:360px;line-height:1.7;">
+    Upload department reports, get AI-powered production insights, predict material needs, 
+    and track every KPI — all in one intelligent platform.
+  </p>
+</div>
+
+<div class="login-right">
+  <div class="brand">
+    <div class="brand-logo">F</div>
+    <div class="brand-name">FIBC <span>AI</span> Platform</div>
+    <div class="brand-sub">Manufacturing Intelligence System</div>
+  </div>
+
+  <div class="form-title">SIGN IN</div>
+  <p class="form-sub">Enter your department credentials. <a href="https://www.fibclanka.com/contact">Need access?</a></p>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="form-group">
+    <label class="form-label">Email Address</label>
+    <input type="email" class="form-input" id="emailInput" placeholder="you@fibclanka.com" autocomplete="email">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-input" id="passwordInput" placeholder="••••••••" autocomplete="current-password">
+  </div>
+
+  <button class="form-submit" id="loginBtn" onclick="doLogin()">Access Platform</button>
+
+  <div class="credentials-hint">
+    <strong>Default Admin:</strong><br>
+    admin@fibclanka.com / FIBCAdmin2024!<br>
+    <span style="color:#555;font-size:11px;margin-top:4px;display:block">Contact system admin to create department accounts.</span>
+  </div>
+
+  <div class="form-footer">
+    <a href="/">← Back to Platform Overview</a>
+  </div>
+</div>
+
+<script>
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorMsg');
+
+  if (!email || !password) {
+    showError('Please enter your email and password.'); return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing In...';
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || 'Login failed'); btn.disabled = false; btn.textContent = 'Access Platform'; return; }
+    localStorage.setItem('fibc_token', data.token);
+    localStorage.setItem('fibc_user', JSON.stringify(data.user));
+    window.location.href = '/dashboard';
+  } catch {
+    showError('Connection error. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Access Platform';
+  }
+}
+
+function showError(msg) {
+  const err = document.getElementById('errorMsg');
+  err.textContent = msg;
+  err.style.display = 'block';
+}
+
+// Check if already logged in
+const token = localStorage.getItem('fibc_token');
+if (token) window.location.href = '/dashboard';
+</script>
+</body>
+</html>

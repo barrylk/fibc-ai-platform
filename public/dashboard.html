@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIBC AI Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --red: #C8102E; --red-bright: #FF1F3D; --red-dim: rgba(200,16,46,0.15);
+  --black: #080808; --surface: #0f0f0f; --surface2: #141414; --surface3: #1a1a1a;
+  --white: #F5F5F5; --gray: #555; --gray-light: #888; --border: rgba(255,255,255,0.07);
+  --sidebar-w: 240px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; display: flex; min-height: 100vh; overflow-x: hidden; }
+
+/* SIDEBAR */
+#sidebar {
+  width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 24px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-hex {
+  width: 32px; height: 32px; background: var(--red);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue'; font-size: 13px; flex-shrink: 0;
+}
+.logo-txt { font-family: 'Bebas Neue'; font-size: 17px; letter-spacing: 1.5px; line-height: 1.1; }
+.logo-txt small { display: block; font-family: 'Barlow Condensed'; font-size: 10px;
+  letter-spacing: 2px; color: var(--gray-light); font-weight: 400; }
+
+.user-card {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: rgba(200,16,46,0.05);
+}
+.user-name { font-weight: 500; font-size: 14px; }
+.user-dept { font-size: 11px; color: var(--gray-light); letter-spacing: 1px; text-transform: uppercase; font-family: 'Barlow Condensed'; margin-top: 2px; }
+.user-badge {
+  display: inline-block; margin-top: 6px; padding: 2px 8px;
+  background: var(--red-dim); border: 1px solid rgba(200,16,46,0.3);
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--red);
+  font-family: 'Barlow Condensed';
+}
+
+.nav-section { padding: 16px 20px 6px; font-family: 'Barlow Condensed'; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--gray); }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 20px;
+  cursor: pointer; transition: all 0.2s; color: var(--gray-light); font-size: 13px;
+  border-left: 3px solid transparent; text-decoration: none;
+}
+.nav-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--white); border-left-color: var(--red); background: rgba(200,16,46,0.08); }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+.logout-btn {
+  width: 100%; padding: 10px; background: transparent;
+  border: 1px solid rgba(200,16,46,0.3); color: var(--red);
+  font-family: 'Barlow Condensed'; font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+}
+.logout-btn:hover { background: var(--red); color: white; }
+
+/* MAIN */
+#main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+.topbar {
+  padding: 16px 32px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(8,8,8,0.8); backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 50;
+}
+.page-title { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.status-dot { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-light); }
+.dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; animation: pulse2 2s infinite; }
+@keyframes pulse2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.content { padding: 32px; flex: 1; }
+
+/* PANELS */
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 24px; margin-bottom: 24px;
+  position: relative;
+}
+.panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, var(--red), transparent);
+}
+.panel-title {
+  font-family: 'Barlow Condensed'; font-size: 13px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--gray-light);
+  margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+}
+.panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* STAT CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 24px; position: relative; overflow: hidden; cursor: default;
+  transition: all 0.3s;
+}
+.stat-card:hover { border-color: rgba(200,16,46,0.3); transform: translateY(-2px); }
+.stat-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--red); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s;
+}
+.stat-card:hover::after { transform: scaleX(1); }
+.stat-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gray-light); font-family: 'Barlow Condensed'; margin-bottom: 10px; }
+.stat-val { font-family: 'Bebas Neue'; font-size: 44px; color: var(--white); line-height: 1; }
+.stat-val.red { color: var(--red); }
+.stat-change { font-size: 12px; margin-top: 6px; color: var(--gray); }
+.stat-change .up { color: #22c55e; }
+.stat-change .down { color: var(--red); }
+.stat-bg {
+  position: absolute; bottom: -10px; right: -10px;
+  font-family: 'Bebas Neue'; font-size: 70px; color: rgba(255,255,255,0.02); line-height: 1;
+}
+
+/* UPLOAD */
+.upload-area {
+  border: 2px dashed rgba(200,16,46,0.25); padding: 40px;
+  text-align: center; cursor: pointer; transition: all 0.3s;
+  position: relative;
+}
+.upload-area:hover, .upload-area.dragover {
+  border-color: var(--red); background: rgba(200,16,46,0.05);
+}
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-text { font-size: 15px; margin-bottom: 6px; }
+.upload-sub { font-size: 12px; color: var(--gray); }
+#fileInput { display: none; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label-sm {
+  font-family: 'Barlow Condensed'; font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gray-light);
+}
+.form-select, .form-input-sm, .form-date {
+  padding: 10px 12px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--white);
+  font-family: 'DM Sans'; font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.form-select:focus, .form-input-sm:focus, .form-date:focus { border-color: var(--red); }
+.form-select option { background: var(--surface2); }
+
+.btn {
+  padding: 11px 24px; background: var(--red); color: white; border: none;
+  font-family: 'Barlow Condensed'; font-size: 13px; letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn:hover { background: var(--red-bright); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-outline {
+  background: transparent; border: 1px solid rgba(200,16,46,0.4); color: var(--red);
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn-outline:hover { background: var(--red); color: white; }
+.btn-sm { padding: 7px 16px; font-size: 11px; clip-path: polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%); }
+.btn-gray { background: var(--surface3); color: var(--gray-light); }
+.btn-gray:hover { background: var(--surface2); color: var(--white); }
+
+/* PROGRESS */
+.progress-bar { height: 4px; background: var(--surface3); margin-top: 8px; }
+.progress-fill { height: 100%; background: var(--red); transition: width 0.3s; }
+
+/* AI CHAT */
+.chat-container {
+  display: flex; flex-direction: column;
+  height: 500px; background: var(--surface2); border: 1px solid var(--border);
+}
+.chat-msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.chat-msgs::-webkit-scrollbar { width: 4px; }
+.chat-msgs::-webkit-scrollbar-track { background: transparent; }
+.chat-msgs::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+.msg { padding: 14px 16px; font-size: 13px; line-height: 1.6; max-width: 85%; }
+.msg.user { background: rgba(200,16,46,0.12); border-left: 2px solid var(--red); align-self: flex-end; color: var(--white); }
+.msg.ai { background: rgba(255,255,255,0.04); border-left: 2px solid rgba(255,255,255,0.1); align-self: flex-start; color: var(--gray-light); }
+.msg-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-family: 'Barlow Condensed'; margin-bottom: 6px; color: var(--gray); }
+.msg-lbl.r { color: var(--red); }
+.msg.ai strong { color: var(--white); }
+.typing { display: flex; gap: 4px; align-items: center; padding: 14px 16px; }
+.typing span { width: 6px; height: 6px; background: var(--gray); border-radius: 50%; animation: bounce 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+
+.chat-input-area {
+  border-top: 1px solid var(--border); padding: 16px;
+  display: flex; gap: 10px;
+}
+.chat-input {
+  flex: 1; padding: 12px 16px; background: var(--surface);
+  border: 1px solid var(--border); color: var(--white);
+  font-family: 'DM Sans'; font-size: 14px; outline: none; resize: none; height: 44px;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--red); }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; padding: 10px 14px; font-family: 'Barlow Condensed';
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gray-light);
+  border-bottom: 1px solid var(--border); background: var(--surface2);
+}
+.data-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.dept-tag {
+  display: inline-block; padding: 3px 10px;
+  background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.2);
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--red);
+  font-family: 'Barlow Condensed';
+}
+
+/* TABS */
+.tab-bar { display: flex; gap: 2px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+.tab {
+  padding: 12px 24px; cursor: pointer; font-family: 'Barlow Condensed';
+  font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-light);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s;
+}
+.tab:hover { color: var(--white); }
+.tab.active { color: var(--white); border-bottom-color: var(--red); }
+
+/* GRID LAYOUTS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.two-thirds { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+
+/* ALERT */
+.alert {
+  padding: 12px 16px; margin-bottom: 16px; font-size: 13px;
+  border-left: 3px solid; display: flex; align-items: center; gap: 10px;
+}
+.alert-success { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #86efac; }
+.alert-error { background: rgba(200,16,46,0.1); border-color: var(--red); color: #ff6b6b; }
+.alert-info { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #93c5fd; }
+
+/* INSIGHT CARD */
+.insight-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 20px; margin-bottom: 12px; transition: border-color 0.2s;
+}
+.insight-card:hover { border-color: rgba(200,16,46,0.3); }
+.insight-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.insight-type { font-family: 'Barlow Condensed'; font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--red); }
+.insight-date { font-size: 11px; color: var(--gray); }
+.insight-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+.insight-preview { font-size: 12px; color: var(--gray-light); line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.insight-content { font-size: 13px; color: var(--gray-light); line-height: 1.8; white-space: pre-wrap; display: none; }
+.insight-content.show { display: block; }
+
+/* USERS TABLE */
+.role-badge { display: inline-block; padding: 2px 8px; font-family: 'Barlow Condensed';
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+.role-badge.admin { background: rgba(200,16,46,0.15); color: var(--red); border: 1px solid rgba(200,16,46,0.3); }
+.role-badge.user { background: rgba(255,255,255,0.07); color: var(--gray-light); border: 1px solid var(--border); }
+.role-badge.manager { background: rgba(59,130,246,0.1); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 32px; width: 480px; max-width: 95vw; position: relative;
+}
+.modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--red);
+}
+.modal-title { font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 2px; margin-bottom: 24px; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px; background: none;
+  border: none; color: var(--gray); font-size: 20px; cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--red); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--surface3); }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  #sidebar { transform: translateX(-100%); }
+  #main { margin-left: 0; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col, .two-thirds { grid-template-columns: 1fr; }
+  .three-col { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-hex">F</div>
+    <div class="logo-txt">FIBC AI <small>Manufacturing Platform</small></div>
+  </div>
+  <div class="user-card">
+    <div class="user-name" id="sidebarUserName">Loading...</div>
+    <div class="user-dept" id="sidebarUserDept">Department</div>
+    <span class="user-badge" id="sidebarUserRole">User</span>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" onclick="showPage('overview')"><span class="icon">📊</span> Overview</div>
+  <div class="nav-item" onclick="showPage('upload')"><span class="icon">📤</span> Upload Reports</div>
+  <div class="nav-item" onclick="showPage('ai-chat')"><span class="icon">🤖</span> AI Assistant</div>
+  <div class="nav-item" onclick="showPage('predictions')"><span class="icon">🔮</span> Predictions</div>
+  <div class="nav-item" onclick="showPage('insights')"><span class="icon">💡</span> AI Insights</div>
+  <div class="nav-item" onclick="showPage('reports')"><span class="icon">📋</span> Reports</div>
+
+  <div class="nav-section" id="adminNav" style="display:none">Admin</div>
+  <div class="nav-item" id="adminUsersNav" style="display:none" onclick="showPage('users')"><span class="icon">👥</span> Users</div>
+  <div class="nav-item" id="adminTargetsNav" style="display:none" onclick="showPage('targets')"><span class="icon">🎯</span> Targets</div>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">⬅ Sign Out</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">OVERVIEW</div>
+    <div class="topbar-right">
+      <div class="status-dot"><div class="dot"></div> AI Online</div>
+      <div style="font-size:12px;color:var(--gray-light)" id="topbarDate"></div>
+    </div>
+  </div>
+
+  <div class="content" id="pageContent">
+    <!-- Dynamic content loads here -->
+  </div>
+</div>
+
+<!-- CREATE USER MODAL -->
+<div class="modal-overlay" id="createUserModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('createUserModal')">✕</button>
+    <div class="modal-title">Create User</div>
+    <div id="createUserMsg"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label-sm">Full Name</label>
+        <input type="text" class="form-input-sm" id="newUserName" placeholder="John Silva">
+      </div>
+      <div class="form-group">
+        <label class="form-label-sm">Email</label>
+        <input type="email" class="form-input-sm" id="newUserEmail" placeholder="john@fibclanka.com">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label-sm">Password</label>
+        <input type="password" class="form-input-sm" id="newUserPassword" placeholder="Min. 8 chars">
+      </div>
+      <div class="form-group">
+        <label class="form-label-sm">Department</label>
+        <select class="form-select" id="newUserDept">
+          <option value="Yarn">Yarn Department</option>
+          <option value="Loom">Loom Department</option>
+          <option value="Printing">Printing Department</option>
+          <option value="Cutting">Cutting Department</option>
+          <option value="BCS">BCS Department</option>
+          <option value="Finishing">Finishing Department</option>
+          <option value="Loading">Loading Department</option>
+          <option value="Stores">Stores Department</option>
+          <option value="Sales">Sales Department</option>
+          <option value="Finance">Finance Department</option>
+          <option value="Administration">Administration</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label class="form-label-sm">Role</label>
+      <select class="form-select" id="newUserRole">
+        <option value="user">User (Department Only)</option>
+        <option value="manager">Manager (View All)</option>
+        <option value="admin">Admin (Full Access)</option>
+      </select>
+    </div>
+    <button class="btn" onclick="createUser()" style="width:100%">Create User Account</button>
+  </div>
+</div>
+
+<!-- INSIGHT MODAL -->
+<div class="modal-overlay" id="insightModal" style="overflow-y:auto">
+  <div class="modal" style="width:700px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('insightModal')">✕</button>
+    <div class="modal-title" id="insightModalTitle">AI Insight</div>
+    <div id="insightModalContent" style="font-size:13px;color:var(--gray-light);line-height:1.8;white-space:pre-wrap"></div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let user = null;
+let token = null;
+let currentPage = 'overview';
+let chartInstances = {};
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+async function init() {
+  token = localStorage.getItem('fibc_token');
+  const userData = localStorage.getItem('fibc_user');
+  if (!token || !userData) { window.location.href = '/login'; return; }
+  user = JSON.parse(userData);
+
+  document.getElementById('sidebarUserName').textContent = user.name;
+  document.getElementById('sidebarUserDept').textContent = user.department;
+  document.getElementById('sidebarUserRole').textContent = user.role.toUpperCase();
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-GB', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+
+  if (user.role === 'admin' || user.role === 'manager') {
+    document.getElementById('adminNav').style.display = '';
+    document.getElementById('adminUsersNav').style.display = '';
+    document.getElementById('adminTargetsNav').style.display = '';
+  }
+
+  showPage('overview');
+}
+
+async function api(method, path, body) {
+  const res = await fetch(path, {
+    method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (res.status === 401) { logout(); return null; }
+  return res.json();
+}
+
+function logout() {
+  localStorage.removeItem('fibc_token');
+  localStorage.removeItem('fibc_user');
+  window.location.href = '/login';
+}
+
+// ─── PAGE ROUTING ─────────────────────────────────────────────────────────────
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll(`[onclick="showPage('${page}')"]`).forEach(n => n.classList.add('active'));
+
+  const titles = { overview:'Overview', upload:'Upload Reports', 'ai-chat':'AI Assistant',
+    predictions:'Predictions', insights:'AI Insights', reports:'Reports', users:'User Management', targets:'Targets' };
+  document.getElementById('pageTitle').textContent = (titles[page] || page).toUpperCase();
+
+  // Destroy charts before re-render
+  Object.values(chartInstances).forEach(c => c.destroy?.());
+  chartInstances = {};
+
+  const pages = { overview: renderOverview, upload: renderUpload, 'ai-chat': renderAiChat,
+    predictions: renderPredictions, insights: renderInsights, reports: renderReports,
+    users: renderUsers, targets: renderTargets };
+  if (pages[page]) pages[page]();
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+async function renderOverview() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Uploads</div><div class="stat-val red" id="s1">—</div><div class="stat-change">Report files processed</div><div class="stat-bg">📤</div></div>
+      <div class="stat-card"><div class="stat-label">Data Records</div><div class="stat-val" id="s2">—</div><div class="stat-change">Total rows analyzed</div><div class="stat-bg">📊</div></div>
+      <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-val" id="s3">—</div><div class="stat-change">Department accounts</div><div class="stat-bg">👥</div></div>
+      <div class="stat-card"><div class="stat-label">AI Insights</div><div class="stat-val red" id="s4">—</div><div class="stat-change">Generated analyses</div><div class="stat-bg">💡</div></div>
+    </div>
+    <div class="two-thirds">
+      <div>
+        <div class="panel">
+          <div class="panel-title">Department Upload Activity</div>
+          <canvas id="deptChart" height="200"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Recent Uploads</div>
+          <table class="data-table">
+            <thead><tr><th>Department</th><th>Type</th><th>File</th><th>Rows</th><th>Date</th></tr></thead>
+            <tbody id="recentUploadsBody"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:20px">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-title">Latest AI Insights</div>
+          <div id="latestInsights" style="min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:13px">Loading...</div>
+        </div>
+        <div class="panel" style="background:linear-gradient(135deg,rgba(200,16,46,0.08),rgba(8,8,8,0.5))">
+          <div class="panel-title">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn" onclick="showPage('upload')">📤 Upload Report</button>
+            <button class="btn btn-outline" onclick="showPage('ai-chat')">🤖 Ask AI Assistant</button>
+            <button class="btn btn-outline" onclick="showPage('predictions')">🔮 Get Predictions</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const stats = await api('GET', '/api/dashboard/stats');
+  if (!stats) return;
+
+  document.getElementById('s1').textContent = stats.totalUploads || 0;
+  document.getElementById('s2').textContent = (stats.totalRows || 0).toLocaleString();
+  document.getElementById('s3').textContent = stats.totalUsers || 0;
+  document.getElementById('s4').textContent = stats.totalInsights || 0;
+
+  // Dept chart
+  const deptLabels = stats.deptStats.map(d => d.department);
+  const deptVals = stats.deptStats.map(d => d.uploads);
+  const ctx = document.getElementById('deptChart');
+  if (ctx) {
+    chartInstances.dept = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: deptLabels.length ? deptLabels : ['No data yet'],
+        datasets: [{ data: deptVals.length ? deptVals : [0], backgroundColor: 'rgba(200,16,46,0.7)', borderColor: '#C8102E', borderWidth: 1 }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#666', font: { family: 'Barlow Condensed', size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#666' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // Recent uploads
+  const tbody = document.getElementById('recentUploadsBody');
+  if (stats.recentUploads.length) {
+    tbody.innerHTML = stats.recentUploads.map(u => `
+      <tr><td><span class="dept-tag">${u.department}</span></td>
+      <td style="color:var(--gray-light);font-size:12px">${u.data_type}</td>
+      <td style="color:var(--gray-light);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.original_name}</td>
+      <td style="color:var(--white)">${(u.row_count||0).toLocaleString()}</td>
+      <td style="color:var(--gray);font-size:12px">${new Date(u.uploaded_at).toLocaleDateString()}</td></tr>`).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:20px">No uploads yet. Upload your first report!</td></tr>';
+  }
+
+  // Latest insights
+  const insightDiv = document.getElementById('latestInsights');
+  if (stats.recentInsights.length) {
+    insightDiv.innerHTML = stats.recentInsights.map(i => `
+      <div class="insight-card" style="cursor:pointer" onclick="showInsight('${btoa(i.title || '')}','${btoa(i.content || '')}')">
+        <div class="insight-header">
+          <span class="insight-type">${i.insight_type}</span>
+          <span class="insight-date">${new Date(i.generated_at).toLocaleDateString()}</span>
+        </div>
+        <div class="insight-title">${i.title || 'AI Analysis'}</div>
+        <div class="insight-preview">${i.content.substring(0, 120)}...</div>
+      </div>`).join('');
+  } else {
+    insightDiv.textContent = 'No AI insights yet. Upload reports and run analysis.';
+  }
+}
+
+// ─── UPLOAD ───────────────────────────────────────────────────────────────────
+function renderUpload() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="two-col">
+      <div>
+        <div class="panel">
+          <div class="panel-title">Upload Department Report</div>
+          <div id="uploadAlert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label-sm">Report Type</label>
+              <select class="form-select" id="dataType">
+                <option value="Production Report">Production Report</option>
+                <option value="QC Report">QC Report</option>
+                <option value="Sales Report">Sales Report</option>
+                <option value="Purchase Order">Purchase Order</option>
+                <option value="Internal Purchase Order">Internal Purchase Order</option>
+                <option value="Finance Report">Finance Report</option>
+                <option value="Stock Report">Stock Report</option>
+                <option value="Damage Report">Damage Report</option>
+                <option value="Efficiency Report">Efficiency Report</option>
+                <option value="Target Report">Target Report</option>
+                <option value="Machine Report">Machine Report</option>
+                <option value="Labour Report">Labour Report</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label-sm">Report Date</label>
+              <input type="date" class="form-date" id="reportDate" value="${new Date().toISOString().split('T')[0]}">
+            </div>
+          </div>
+          <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="handleDrop(event)">
+            <div class="upload-icon">📊</div>
+            <div class="upload-text" id="uploadText">Drop your Excel file here or click to browse</div>
+            <div class="upload-sub">Supports .xlsx, .xls, .csv — Max 10MB</div>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)">
+          </div>
+          <div id="uploadProgress" style="display:none;margin-top:12px">
+            <div style="font-size:12px;color:var(--gray-light);margin-bottom:6px" id="progressText">Processing...</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn" id="uploadBtn" onclick="uploadFile()" disabled>Upload & Process</button>
+            <button class="btn btn-outline" onclick="clearUpload()">Clear</button>
+          </div>
+        </div>
+
+        <div class="panel" id="previewPanel" style="display:none">
+          <div class="panel-title">Data Preview</div>
+          <div id="previewContent"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-title">Recent Uploads — ${user.role==='admin'?'All Departments':user.department}</div>
+          <div id="myUploads" style="min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:13px">Loading...</div>
+        </div>
+
+        <div class="panel" style="background:linear-gradient(135deg,rgba(200,16,46,0.06),transparent)">
+          <div class="panel-title">Upload Guide</div>
+          <div style="font-size:13px;color:var(--gray-light);line-height:1.8">
+            <p style="margin-bottom:10px">📌 <strong style="color:var(--white)">First row = column headers</strong></p>
+            <p style="margin-bottom:10px">📌 Include a <strong style="color:var(--white)">Date</strong> column where possible</p>
+            <p style="margin-bottom:10px">📌 Numeric values should be numbers, not text</p>
+            <p style="margin-bottom:10px">📌 Upload daily, weekly, or monthly — the AI learns all patterns</p>
+            <p>📌 After upload, run <strong style="color:var(--red)">AI Analysis</strong> for insights</p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  loadMyUploads();
+}
+
+let selectedFile = null;
+function handleFileSelect(e) { selectFile(e.target.files[0]); }
+function handleDrop(e) { e.preventDefault(); document.getElementById('uploadArea').classList.remove('dragover'); selectFile(e.dataTransfer.files[0]); }
+function selectFile(file) {
+  if (!file) return;
+  selectedFile = file;
+  document.getElementById('uploadText').textContent = `Selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  document.getElementById('uploadBtn').disabled = false;
+  document.getElementById('uploadArea').style.borderColor = 'var(--red)';
+}
+function clearUpload() {
+  selectedFile = null;
+  document.getElementById('uploadText').textContent = 'Drop your Excel file here or click to browse';
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('uploadArea').style.borderColor = '';
+  document.getElementById('previewPanel').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadAlert').innerHTML = '';
+}
+
+async function uploadFile() {
+  if (!selectedFile) return;
+  const btn = document.getElementById('uploadBtn');
+  const prog = document.getElementById('uploadProgress');
+  const fill = document.getElementById('progressFill');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  prog.style.display = 'block';
+
+  let pct = 0;
+  const progInterval = setInterval(() => { pct = Math.min(pct + 8, 85); fill.style.width = pct + '%'; }, 150);
+
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+  fd.append('data_type', document.getElementById('dataType').value);
+  fd.append('report_date', document.getElementById('reportDate').value);
+
+  try {
+    const res = await fetch('/api/data/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: fd
+    });
+    const data = await res.json();
+    clearInterval(progInterval); fill.style.width = '100%';
+
+    if (!res.ok) { showAlert('uploadAlert', 'error', data.error || 'Upload failed'); btn.disabled = false; btn.textContent = 'Upload & Process'; return; }
+
+    showAlert('uploadAlert', 'success', `✅ Uploaded successfully! ${data.rowCount} rows processed.`);
+
+    // Show preview
+    if (data.preview?.length) {
+      const cols = Object.keys(data.preview[0]);
+      document.getElementById('previewPanel').style.display = 'block';
+      document.getElementById('previewContent').innerHTML = `
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>${data.preview.map(row=>`<tr>${cols.map(c=>`<td style="font-size:12px;color:var(--gray-light)">${row[c]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn" onclick="runAnalysis(${data.uploadId})">🤖 Run AI Analysis</button>
+        </div>`;
+    }
+    loadMyUploads();
+  } catch (e) {
+    clearInterval(progInterval);
+    showAlert('uploadAlert', 'error', 'Upload failed: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Upload & Process';
+}
+
+async function loadMyUploads() {
+  const el = document.getElementById('myUploads');
+  if (!el) return;
+  const uploads = await api('GET', '/api/data/uploads');
+  if (!uploads || !uploads.length) { el.textContent = 'No uploads yet.'; return; }
+  el.innerHTML = `
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Type</th><th>Dept</th><th>Rows</th><th>Date</th><th></th></tr></thead>
+      <tbody>${uploads.slice(0,10).map(u=>`
+        <tr>
+          <td style="font-size:12px;color:var(--gray-light)">${u.data_type}</td>
+          <td><span class="dept-tag" style="font-size:10px">${u.department}</span></td>
+          <td style="color:var(--white)">${(u.row_count||0).toLocaleString()}</td>
+          <td style="font-size:11px;color:var(--gray)">${new Date(u.uploaded_at).toLocaleDateString()}</td>
+          <td><button class="btn btn-sm" onclick="runAnalysis(${u.id})">Analyze</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function runAnalysis(uploadId) {
+  const btn = event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
+  const data = await api('POST', '/api/ai/analyze', { upload_id: uploadId, analysis_type: 'comprehensive' });
+  if (btn) { btn.disabled = false; btn.textContent = 'Analyze'; }
+  if (data?.analysis) {
+    showPage('insights');
+    setTimeout(() => {
+      document.getElementById('pageContent').insertAdjacentHTML('afterbegin', `
+        <div class="panel" style="border-color:rgba(200,16,46,0.3);background:rgba(200,16,46,0.05)">
+          <div class="panel-title" style="color:var(--red)">🤖 New AI Analysis</div>
+          <div style="font-size:13px;color:var(--gray-light);line-height:1.8;white-space:pre-wrap">${data.analysis}</div>
+        </div>`);
+    }, 100);
+  }
+}
+
+// ─── AI CHAT ─────────────────────────────────────────────────────────────────
+function renderAiChat() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="two-col">
+      <div>
+        <div class="panel" style="padding:0;overflow:hidden">
+          <div class="panel-title" style="padding:20px 24px;margin:0;border-bottom:1px solid var(--border)">
+            🤖 FIBC-AI Assistant
+            <span style="font-size:11px;color:var(--gray);margin-left:10px;font-family:'DM Sans';font-weight:400;text-transform:none;letter-spacing:0">Powered by Claude AI — Trained on your factory data</span>
+          </div>
+          <div class="chat-container" style="border:none">
+            <div class="chat-msgs" id="chatMsgs">
+              <div class="msg ai">
+                <div class="msg-lbl">FIBC-AI</div>
+                Hello! I'm your FIBC Lanka AI assistant. I have access to all your uploaded production, QC, sales, and inventory data.<br><br>
+                Ask me anything — production targets, efficiency, material needs, damage analysis, or any operational question. What would you like to know?
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <textarea class="chat-input" id="chatInput" placeholder="Ask about production, efficiency, materials, targets..." rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+              <button class="btn" onclick="sendChat()" id="chatSendBtn">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-title">Suggested Questions</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="suggestions"></div>
+        </div>
+      </div>
+    </div>`;
+
+  const suggestions = [
+    'What is our overall production efficiency this month?',
+    'Which department has the most uploads recently?',
+    'Summarize the QC damage trends',
+    'What materials should we stock up on?',
+    'Compare production targets vs actual achievement',
+    'What are the top issues identified in recent reports?',
+    'Predict production for next 30 days',
+    'How can we reduce bag damage rates?'
+  ];
+
+  document.getElementById('suggestions').innerHTML = suggestions.map(s =>
+    `<div style="padding:10px 14px;background:var(--surface2);border-left:2px solid transparent;cursor:pointer;font-size:13px;color:var(--gray-light);transition:all 0.2s"
+      onmouseenter="this.style.borderLeftColor='var(--red)';this.style.color='var(--white)'"
+      onmouseleave="this.style.borderLeftColor='transparent';this.style.color='var(--gray-light)'"
+      onclick="document.getElementById('chatInput').value='${s}';sendChat()">${s}</div>`
+  ).join('');
+}
+
+let chatLoading = false;
+async function sendChat() {
+  if (chatLoading) return;
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML += `<div class="msg user"><div class="msg-lbl r">You</div>${escHtml(msg)}</div>`;
+  msgs.innerHTML += `<div class="typing" id="typingIndicator"><span></span><span></span><span></span></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  chatLoading = true;
+  document.getElementById('chatSendBtn').disabled = true;
+
+  const data = await api('POST', '/api/ai/chat', { message: msg });
+
+  document.getElementById('typingIndicator')?.remove();
+  chatLoading = false;
+  document.getElementById('chatSendBtn').disabled = false;
+
+  if (data?.reply) {
+    msgs.innerHTML += `<div class="msg ai"><div class="msg-lbl">FIBC-AI</div>${data.reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--white)">$1</strong>')}</div>`;
+  } else {
+    msgs.innerHTML += `<div class="msg ai"><div class="msg-lbl">FIBC-AI</div>Sorry, I couldn't process that. Please check the Anthropic API key is configured.</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ─── PREDICTIONS ─────────────────────────────────────────────────────────────
+function renderPredictions() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="two-col">
+      <div>
+        <div class="panel">
+          <div class="panel-title">🔮 Generate AI Prediction</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label-sm">Department</label>
+              <select class="form-select" id="predDept">
+                ${user.role==='admin'?'<option value="All">All Departments</option>':''}
+                <option value="Yarn">Yarn</option><option value="Loom">Loom</option>
+                <option value="Printing">Printing</option><option value="Cutting">Cutting</option>
+                <option value="BCS">BCS</option><option value="Finishing">Finishing</option>
+                <option value="Loading">Loading</option><option value="Stores">Stores</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label-sm">Period</label>
+              <select class="form-select" id="predPeriod">
+                <option>Next 7 days</option><option selected>Next 30 days</option>
+                <option>Next 60 days</option><option>Next quarter</option><option>Next 6 months</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label-sm">Focus Metric (optional)</label>
+            <input type="text" class="form-input-sm" id="predMetric" placeholder="e.g. production output, yarn consumption, damage rate">
+          </div>
+          <button class="btn" onclick="getPrediction()" id="predBtn" style="width:100%">🔮 Generate Prediction Report</button>
+        </div>
+        <div class="panel" id="predResult" style="display:none">
+          <div class="panel-title" style="color:var(--red)">AI Prediction Report</div>
+          <div id="predContent" style="font-size:13px;color:var(--gray-light);line-height:1.8;white-space:pre-wrap"></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-title">About Predictions</div>
+          <div style="font-size:13px;color:var(--gray-light);line-height:1.8">
+            <p style="margin-bottom:12px">The AI prediction engine analyzes your uploaded reports to forecast:</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${['📊 Production output forecasts','🧵 Material requirements planning','⚠️ Risk & bottleneck identification',
+                '🎯 Realistic target setting','💰 Procurement suggestions','🔧 Maintenance predictions'].map(i=>
+                `<div style="padding:10px;background:var(--surface2);border-left:2px solid var(--red);font-size:13px">${i}</div>`).join('')}
+            </div>
+            <p style="margin-top:16px;color:var(--gray)">📌 More data uploaded = better predictions. Upload historical reports for best results.</p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function getPrediction() {
+  const btn = document.getElementById('predBtn');
+  btn.disabled = true; btn.textContent = '🔮 Analyzing data...';
+  const data = await api('POST', '/api/ai/predict', {
+    department: document.getElementById('predDept').value,
+    period: document.getElementById('predPeriod').value,
+    metric: document.getElementById('predMetric').value
+  });
+  btn.disabled = false; btn.textContent = '🔮 Generate Prediction Report';
+  if (data?.prediction) {
+    document.getElementById('predResult').style.display = '';
+    document.getElementById('predContent').innerHTML = data.prediction.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--white)">$1</strong>');
+  }
+}
+
+// ─── INSIGHTS ─────────────────────────────────────────────────────────────────
+async function renderInsights() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-title">All AI Insights & Analyses</div>
+      <div id="allInsights">Loading...</div>
+    </div>`;
+
+  const insights = await api('GET', '/api/ai/insights');
+  const el = document.getElementById('allInsights');
+  if (!insights?.length) { el.innerHTML = '<div style="color:var(--gray);padding:40px;text-align:center">No insights yet. Upload reports and run AI analysis to generate insights.</div>'; return; }
+  el.innerHTML = insights.map(i => `
+    <div class="insight-card" style="cursor:pointer" onclick="showInsight('${encodeURI(i.title||'')}','${encodeURI(i.content||'')}')">
+      <div class="insight-header">
+        <span class="insight-type">${i.insight_type} ${i.department?`— ${i.department}`:''}</span>
+        <span class="insight-date">${new Date(i.generated_at).toLocaleString()}</span>
+      </div>
+      <div class="insight-title">${i.title || 'AI Analysis'}</div>
+      <div class="insight-preview">${i.content.substring(0,200)}...</div>
+    </div>`).join('');
+}
+
+function showInsight(title, content) {
+  document.getElementById('insightModalTitle').textContent = decodeURI(title) || 'AI Insight';
+  document.getElementById('insightModalContent').innerHTML = decodeURI(content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--white)">$1</strong>');
+  document.getElementById('insightModal').classList.add('show');
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+async function renderReports() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-title">All Uploaded Reports</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <input type="text" class="form-input-sm" id="searchReports" placeholder="Search by type or department..." oninput="filterReports()" style="flex:1">
+        <select class="form-select" id="filterDept" onchange="filterReports()" style="width:200px">
+          <option value="">All Departments</option>
+          ${['Yarn','Loom','Printing','Cutting','BCS','Finishing','Loading','Stores'].map(d=>`<option>${d}</option>`).join('')}
+        </select>
+      </div>
+      <div id="reportsTable">Loading...</div>
+    </div>`;
+
+  window._allReports = await api('GET', '/api/data/uploads');
+  filterReports();
+}
+
+function filterReports() {
+  const search = document.getElementById('searchReports')?.value.toLowerCase() || '';
+  const dept = document.getElementById('filterDept')?.value || '';
+  const reports = (window._allReports || []).filter(r =>
+    (!dept || r.department === dept) &&
+    (!search || r.data_type.toLowerCase().includes(search) || r.department.toLowerCase().includes(search) || r.original_name.toLowerCase().includes(search))
+  );
+  const el = document.getElementById('reportsTable');
+  if (!reports.length) { el.innerHTML = '<div style="color:var(--gray);padding:30px;text-align:center">No reports found.</div>'; return; }
+  el.innerHTML = `<table class="data-table">
+    <thead><tr><th>Report Type</th><th>Department</th><th>File Name</th><th>Rows</th><th>Uploaded By</th><th>Date</th><th>Actions</th></tr></thead>
+    <tbody>${reports.map(r=>`<tr>
+      <td style="font-size:13px">${r.data_type}</td>
+      <td><span class="dept-tag">${r.department}</span></td>
+      <td style="color:var(--gray-light);font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.original_name}</td>
+      <td style="color:var(--white)">${(r.row_count||0).toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--gray-light)">${r.uploader_name||'—'}</td>
+      <td style="font-size:12px;color:var(--gray)">${new Date(r.uploaded_at).toLocaleDateString()}</td>
+      <td><button class="btn btn-sm" onclick="runAnalysis(${r.id})">🤖 Analyze</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ─── USERS (ADMIN) ────────────────────────────────────────────────────────────
+async function renderUsers() {
+  if (user.role !== 'admin' && user.role !== 'manager') { showPage('overview'); return; }
+  document.getElementById('pageContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-title" style="justify-content:space-between;align-items:center;display:flex">
+        <span>User Management</span>
+        <button class="btn btn-sm" onclick="document.getElementById('createUserModal').classList.add('show')">+ New User</button>
+      </div>
+      <div id="usersTable">Loading...</div>
+    </div>`;
+  loadUsers();
+}
+
+async function loadUsers() {
+  const users = await api('GET', '/api/admin/users');
+  const el = document.getElementById('usersTable');
+  if (!users?.length) { el.innerHTML = '<div style="color:var(--gray);padding:30px;text-align:center">No users found.</div>'; return; }
+  el.innerHTML = `<table class="data-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+    <tbody>${users.map(u=>`<tr>
+      <td style="font-weight:500">${u.name}</td>
+      <td style="font-size:12px;color:var(--gray-light)">${u.email}</td>
+      <td><span class="dept-tag" style="font-size:10px">${u.department}</span></td>
+      <td><span class="role-badge ${u.role}">${u.role}</span></td>
+      <td><span style="font-size:12px;color:${u.active?'#22c55e':'var(--red)'}">${u.active?'● Active':'● Inactive'}</span></td>
+      <td style="font-size:12px;color:var(--gray)">${new Date(u.created_at).toLocaleDateString()}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-outline" onclick="toggleUser(${u.id},${u.active})">${u.active?'Disable':'Enable'}</button>
+        ${u.role!=='admin'?`<button class="btn btn-sm btn-gray" onclick="deleteUser(${u.id},this)">Del</button>`:''}
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function createUser() {
+  const name=document.getElementById('newUserName').value.trim();
+  const email=document.getElementById('newUserEmail').value.trim();
+  const password=document.getElementById('newUserPassword').value;
+  const department=document.getElementById('newUserDept').value;
+  const role=document.getElementById('newUserRole').value;
+  const msgEl = document.getElementById('createUserMsg');
+  if (!name||!email||!password) { msgEl.innerHTML='<div class="alert alert-error">All fields required.</div>'; return; }
+  const data = await api('POST','/api/admin/users',{name,email,password,department,role});
+  if (data?.id) {
+    msgEl.innerHTML='<div class="alert alert-success">✅ User created successfully!</div>';
+    setTimeout(()=>{ closeModal('createUserModal'); loadUsers(); }, 1500);
+  } else {
+    msgEl.innerHTML=`<div class="alert alert-error">${data?.error||'Failed to create user'}</div>`;
+  }
+}
+
+async function toggleUser(id, active) {
+  await api('PATCH', `/api/admin/users/${id}`, { active: !active });
+  loadUsers();
+}
+async function deleteUser(id, btn) {
+  if (!confirm('Delete this user?')) return;
+  await api('DELETE', `/api/admin/users/${id}`);
+  loadUsers();
+}
+
+// ─── TARGETS ─────────────────────────────────────────────────────────────────
+async function renderTargets() {
+  document.getElementById('pageContent').innerHTML = `
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">Set Production Target</div>
+        <div id="targetMsg"></div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label-sm">Department</label>
+          <select class="form-select" id="tDept">
+            ${['Yarn','Loom','Printing','Cutting','BCS','Finishing','Loading','Stores'].map(d=>`<option>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label-sm">Metric Name</label>
+          <input type="text" class="form-input-sm" id="tMetric" placeholder="e.g. Daily Bag Output, Efficiency %, Damage Rate">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label-sm">Target Value</label>
+            <input type="number" class="form-input-sm" id="tValue" placeholder="e.g. 5000">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Period</label>
+            <select class="form-select" id="tPeriod">
+              <option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" onclick="setTarget()" style="width:100%;margin-top:8px">Set Target</button>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Current Targets</div>
+        <div id="targetsList">Loading...</div>
+      </div>
+    </div>`;
+  loadTargets();
+}
+
+async function setTarget() {
+  const data = await api('POST','/api/targets',{
+    department:document.getElementById('tDept').value,
+    metric_name:document.getElementById('tMetric').value,
+    target_value:+document.getElementById('tValue').value,
+    period:document.getElementById('tPeriod').value
+  });
+  if (data?.id) { showAlert('targetMsg','success','Target set!'); loadTargets(); }
+}
+
+async function loadTargets() {
+  const targets = await api('GET','/api/targets');
+  const el = document.getElementById('targetsList');
+  if (!targets?.length) { el.innerHTML='<div style="color:var(--gray);text-align:center;padding:30px">No targets set yet.</div>'; return; }
+  el.innerHTML = targets.map(t=>`
+    <div style="padding:14px;background:var(--surface2);border-left:2px solid var(--red);margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:500">${t.metric_name}</div>
+          <div style="font-size:11px;color:var(--gray-light);margin-top:2px">${t.department} — ${t.period}</div>
+        </div>
+        <div style="font-family:'Bebas Neue';font-size:28px;color:var(--red)">${t.target_value.toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function showAlert(containerId, type, msg) {
+  document.getElementById(containerId).innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(()=>{ const el=document.getElementById(containerId); if(el) el.innerHTML=''; }, 4000);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+
+init();
+</script>
+</body>
+</html>
